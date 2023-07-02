@@ -2,11 +2,11 @@ const hre = require("hardhat");
 
 async function main() {
 
-  // Deploy Safe contract
-  const Safe = await hre.ethers.getContractFactory("BoxDefi");
-  const safe = await Safe.deploy();
-  await safe.deployed();
-  console.log("contracts deployed to:", safe.address); 
+  // Deploy BoxSpace contract
+  const BoxSpace = await hre.ethers.getContractFactory("BoxSpace");
+  const boxSpace = await BoxSpace.deploy();
+  await boxSpace.deployed();
+  console.log("contracts deployed to:", boxSpace.address); 
 }
 
 main().catch((error) => {

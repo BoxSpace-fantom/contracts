@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
-abstract contract WDEVinterface {
+abstract contract Wftminterface {
     function deposit() public virtual payable;
     function withdraw(uint wad) public virtual;
 }
@@ -17,13 +17,13 @@ interface ERC20I {
     function decimals() external view returns (uint8);
 }
 
-contract BoxDefi is ERC1155Supply, PriceFeed {
+contract BoxSpace is ERC1155Supply, PriceFeed {
     event Buy(uint boxId, uint buyAmount, uint boxTokenReceived);
     event Sell(uint boxId, uint sellAmount, uint amountReceived);
     event TokenSwapped(uint256 amountIn, uint256 amountOut);
 
     ISwapRouter public immutable swapRouter;
-    WDEVinterface wdevtoken;
+    Wftminterface wftmtoken;
 
     uint24 public constant poolFee = 30;
     uint8 constant DECIMAL = 2;
@@ -38,7 +38,7 @@ contract BoxDefi is ERC1155Supply, PriceFeed {
     mapping(uint24 => mapping(address => uint256)) public boxBalance;
     mapping(string => address) tokenAddress;
     mapping(string => address) tokenPriceFeed;
-    address DEVPriceFeed;
+    address ftmPriceFeed;
 
     uint24 boxNumber;
 
@@ -55,12 +55,12 @@ contract BoxDefi is ERC1155Supply, PriceFeed {
     constructor() ERC1155(" ") PriceFeed() {
         owner = msg.sender;
         swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
-        DEVPriceFeed = 0xa39d8684B8cd74821db73deEB4836Ea46E145300;
+        ftmPriceFeed = 0xe04676B9A9A2973BCb0D1478b5E1E9098BBB7f3D;
 
-        addToken("DEV", address(0), DEVPriceFeed);
-        addToken("WDEV", 0x7128AF8F5AA6abe92b5f9ba9545146027A995B16, DEVPriceFeed);
+        addToken("ftm", address(0), ftmPriceFeed);
+        addToken("Wftm", 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83, ftmPriceFeed);
 
-        wdevtoken = WDEVinterface(tokenAddress["WDEV"]);
+        wftmtoken = Wftminterface(tokenAddress["Wftm"]);
     }
 
     function addToken(string memory _tokenSymbol, address _tokenAddress, address _tokenPriceFeed) public onlyOwner {
@@ -77,15 +77,15 @@ contract BoxDefi is ERC1155Supply, PriceFeed {
         for (uint256 i = 0; i < tokensInBox; i++) {
             Token memory token = boxDistribution[boxId][i];
 
-            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('DEV'))) {
-                uint256 DEVAmount = msg.value * token.percentage / 100;
-                boxBalance[boxId][address(this)] += DEVAmount;
-                emit Buy(boxId, msg.value, DEVAmount);
-            } else if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('WDEV'))) {
-                uint256 WDEVAmount = msg.value * token.percentage / 100;
-                wdevtoken.deposit{value: WDEVAmount}();
-                boxBalance[boxId][address(this)] += WDEVAmount;
-                emit Buy(boxId, msg.value, WDEVAmount);
+            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('ftm'))) {
+                uint256 ftmAmount = msg.value * token.percentage / 100;
+                boxBalance[boxId][address(this)] += ftmAmount;
+                emit Buy(boxId, msg.value, ftmAmount);
+            } else if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('Wftm'))) {
+                uint256 WftmAmount = msg.value * token.percentage / 100;
+                wftmtoken.deposit{value: WftmAmount}();
+                boxBalance[boxId][address(this)] += WftmAmount;
+                emit Buy(boxId, msg.value, WftmAmount);
             }
         }
 
@@ -101,17 +101,17 @@ contract BoxDefi is ERC1155Supply, PriceFeed {
         for (uint256 i = 0; i < tokensInBox; i++) {
             Token memory token = boxDistribution[boxId][i];
 
-            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('DEV'))) {
-                uint256 DEVAmount = boxBalance[boxId][address(this)] * amount / totalSupply(boxId);
-                boxBalance[boxId][address(this)] -= DEVAmount;
-                emit Sell(boxId, amount, DEVAmount);
-                TransferHelper.safeTransferETH(msg.sender, DEVAmount);
-            } else if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('WDEV'))) {
-                uint256 WDEVAmount = boxBalance[boxId][address(this)] * amount / totalSupply(boxId);
-                boxBalance[boxId][address(this)] -= WDEVAmount;
-                emit Sell(boxId, amount, WDEVAmount);
-                wdevtoken.withdraw(WDEVAmount);
-                TransferHelper.safeTransferETH(msg.sender, WDEVAmount);
+            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('ftm'))) {
+                uint256 ftmAmount = boxBalance[boxId][address(this)] * amount / totalSupply(boxId);
+                boxBalance[boxId][address(this)] -= ftmAmount;
+                emit Sell(boxId, amount, ftmAmount);
+                TransferHelper.safeTransferETH(msg.sender, ftmAmount);
+            } else if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('Wftm'))) {
+                uint256 WftmAmount = boxBalance[boxId][address(this)] * amount / totalSupply(boxId);
+                boxBalance[boxId][address(this)] -= WftmAmount;
+                emit Sell(boxId, amount, WftmAmount);
+                wftmtoken.withdraw(WftmAmount);
+                TransferHelper.safeTransferETH(msg.sender, WftmAmount);
             }
         }
 
@@ -162,7 +162,7 @@ contract BoxDefi is ERC1155Supply, PriceFeed {
         for (uint256 i = 0; i < tokensInBox; i++) {
             Token memory token = boxDistribution[boxId][i];
 
-            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('DEV'))) {
+            if (keccak256(abi.encodePacked(token.name)) == keccak256(abi.encodePacked('ftm'))) {
                 balance += buyAmount * token.percentage / 100;
             }
         }
