@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/workspace/contracts/contracts/BoxSpace.sol": {
-      "lastModificationDate": 1688257446597,
-      "contentHash": "2d933dd8dfa1b1de8d9b348f058f9ad9",
+      "lastModificationDate": 1688260970922,
+      "contentHash": "7150a2ebc7319510df7c4bae671f726d",
       "sourceName": "contracts/BoxSpace.sol",
       "solcConfig": {
         "version": "0.8.18",
