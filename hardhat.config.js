@@ -9,7 +9,7 @@ module.exports = {
   settings: {
     optimizer: {
       enabled: true,
-      runs: 10,
+      runs: 200,
     },
     viaIR: true,
     
@@ -37,6 +37,5 @@ module.exports = {
   }
 };
 
-//moonbase - contracts deployed to: 0x4e368562E3A07A08b7cA2f16c649702FbD485932
 
-//Fantom testnet - contracts deployed to: 0x1e3a926639CB2d60219E15976c24493b9e635169
+//Fantom mainnet - contracts deployed to: 0x089898e0b744aef9227BBb6dc7123843bFA8ccF1
